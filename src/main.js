@@ -1,5 +1,5 @@
 const express = require('express');
-const roomUiiid = require('crypto');
+const uuid = require('crypto');
 const app = express();
 const port = 9090;
 
@@ -7,20 +7,34 @@ app.use(express.json());
 
 const Users = [];
 
-app.post('/login', (req, res) => {
+const validacao = (req, res, next) => {
   const { userName } = req.body;
 
-  const token = roomUiiid.randomUUID();
+  const token = uuid.randomUUID();
   Users.push({ userName, token: token });
+  next();
+};
 
-  res.status(200).json({ 'O token foi gerado com sucesso:': token });
+// app.get('/', validacao, (req, res) => {
+//   res.send('Retornou!');
+// });
+
+app.post('/login', validacao, (req, res) => {
+  const userName = req.body.userName;
+  const user = Users.filter((user) => user.userName === userName);
+
+  res.status(200).json(user);
 });
 
 app.get('/protegida', (req, res) => {
   const session = req.headers.autorizacao;
-  const User = Users.filter((v) => v.token === session);
+  const user = Users.filter((v) => v.token === session);
 
-  if (User.length === 0 || session !== User[0].token) {
+  if (user.length === 0) {
+    return res.json('Usuário não encontrado');
+  }
+
+  if (user[0].token !== session || user.length === 0) {
     return res
       .status(401)
       .json({ mensagem: 'Você não esta autorizado, volte a rota de login!' });
