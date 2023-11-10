@@ -31,10 +31,10 @@ app.get('/protegida', (req, res) => {
   const user = Users.filter((v) => v.token === session);
 
   if (user.length === 0) {
-    return res.json('Usuário não encontrado');
+    return res.json({ mensagem: 'Usuário não encontrado' });
   }
 
-  if (user[0].token !== session || user.length === 0) {
+  if (user[0].token !== session) {
     return res
       .status(401)
       .json({ mensagem: 'Você não esta autorizado, volte a rota de login!' });
